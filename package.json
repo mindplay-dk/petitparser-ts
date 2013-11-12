@@ -1,0 +1,9 @@
+{
+  "name": "petitparserts",
+  "version": "0.1.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-concat": "~0.1.2",
+    "grunt-ts": "~1.4.1"
+  }
+}
