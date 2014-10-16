@@ -1,9 +1,10 @@
 // Copyright (c) 2013, Lukas Renggli <renggli@gmail.com>
 
 /// <reference path="core/context.ts" />
-/// <reference path="core/token.ts" />
-/// <reference path="core/parser.ts" />
 /// <reference path="core/characters.ts" />
+/// <reference path="core/token.ts" />
+/// <reference path="core/actions.ts" />
+/// <reference path="core/parser.ts" />
 /// <reference path="core/parsers.ts" />
 /// <reference path="core/predicates.ts" />
 /// <reference path="core/combinators.ts" />

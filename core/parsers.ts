@@ -76,7 +76,7 @@ module petitparser {
      *     var p = undefined();
      *     p.set(char('a').seq(p).or(char('b')));
      */
-    export function undefined_(message = 'undefined parser'): _SetableParser {
+    export function undefined_(message = 'undefined parser'): SetableParser {
         return failure(message).setable();
     }
     
@@ -84,24 +84,18 @@ module petitparser {
      * Interface of a parser that can be redefined using [SetableParser.set].
      * @abstract
      */
-    export interface SetableParser extends Parser {
+    export class SetableParser extends DelegateParser {
     
-        /**
-         * Sets the receiver to delegate to [parser].
-         * @abstract
-         */
-        set(parser: Parser): void;
-    
-    }
-    
-    export class _SetableParser extends DelegateParser implements SetableParser {
+        constructor(parser: Parser) {
+            super(parser);
+        }
     
         // TODO constructor
         // _SetableParser(parser) : super(parser);
     
         set(parser: Parser): void { return this.replace(this.getChildren()[0], parser) }
     
-        copy(): Parser { return new _SetableParser(this._delegate) }
+        copy(): Parser { return new SetableParser(this._delegate) }
     
     }
 }

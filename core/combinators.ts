@@ -42,7 +42,7 @@ module petitparser {
     /**
      * A parser that succeeds only at the end of the input.
      */
-    class _EndOfInputParser extends DelegateParser {
+    export class _EndOfInputParser extends DelegateParser {
     
         private _message: string;
     
@@ -77,7 +77,7 @@ module petitparser {
      * The and-predicate, a parser that succeeds whenever its delegate does, but
      * does not consume the input stream [Parr 1994, 1995].
      */
-    class _AndParser extends DelegateParser {
+    export class _AndParser extends DelegateParser {
     
         constructor(parser: Parser) {
             super(parser);
@@ -102,7 +102,7 @@ module petitparser {
      * The not-predicate, a parser that succeeds whenever its delegate does not,
      * but consumes no input [Parr 1994, 1995].
      */
-    class _NotParser extends DelegateParser {
+    export class _NotParser extends DelegateParser {
     
         private _message: string;
     

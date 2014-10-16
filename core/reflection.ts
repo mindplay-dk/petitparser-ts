@@ -7,16 +7,31 @@ module petitparser {
      * not modify the grammar while iterating over it, otherwise you might
      * get unexpected results.
      */
-    function allParser(root: Parser): Parser[] {
+    function allParser(root: Parser): IterableBase<Parser> {
         return new _ParserIterable(root);
     }
     
-    class _ParserIterable extends IterableBase<Parser> {
+    interface IterableBase<T> {
+        forEach: (T) => void;
+    }
+    
+    interface Iterator<T> {
+        current: T;
+        moveNext: () => boolean;
+    }
+    
+    class _ParserIterable implements IterableBase<Parser> {
         private _root: Parser;
         constructor (root: Parser) {
             this._root = root;
         }
         getIterator(): Iterator<Parser> { return new _ParserIterator(this._root) }
+        forEach(fn: (Parser) => void) {
+            var it = this.getIterator();
+            while (it.moveNext()) {
+                fn(it.current);
+            }
+        }
     }
     
     class _ParserIterator implements Iterator<Parser> {
@@ -55,22 +70,22 @@ module petitparser {
      */
     function transformParser(root: Parser, func: (parser: Parser) => Parser): Parser {
         // TODO we don't have a Map type in JS/TS
-        var mapping = new Map();
+        var mapping = new Map<number,Parser>();
         allParser(root).forEach((parser: Parser) => {
-            mapping[parser] = func(parser.copy());
+            mapping[parser._id] = func(parser.copy());
         });
         while (true) {
             var changed = false;
-            allParser(mapping[root]).forEach((parser: Parser) => {
+            allParser(mapping[root._id]).forEach((parser: Parser) => {
                 parser.getChildren().forEach((source: Parser) => {
-                    if (mapping.containsKey(source)) {
-                        parser.replace(source, mapping[source]);
+                    if (mapping.has(source._id)) {
+                        parser.replace(source, mapping[source._id]);
                         changed = true;
                     }
                 });
             });
             if (!changed) {
-                return mapping[root];
+                return mapping[root._id];
             }
         }
     }
@@ -92,7 +107,7 @@ module petitparser {
     
     function _removeSetable(parser: Parser): Parser {
         while (parser instanceof SetableParser) {
-            parser = parser.getChildren().first; // TODO
+            parser = parser.getChildren()[0];
         }
         return parser;
     }

@@ -8,7 +8,7 @@ import CompositeParser = petitparser.CompositeParser;
 import char = petitparser.char;
 import failure = petitparser.failure;
 import digit = petitparser.digit;
-import any = petitparser.any;
+import some = petitparser.some;
 import epsilon = petitparser.epsilon;
 import letter = petitparser.letter;
 import word = petitparser.word;
@@ -18,6 +18,9 @@ import uppercase = petitparser.uppercase;
 import pattern = petitparser.pattern;
 import range = petitparser.range;
 import whitespace = petitparser.whitespace;
+import anyIn = petitparser.anyIn;
+import chars = petitparser.chars;
+import stringIgnoreCase = petitparser.stringIgnoreCase;
 
 class Matcher {
     message: string;
@@ -34,10 +37,10 @@ class Matcher {
 var isTrue = new Matcher('is true', (value) => value === true);
 var isFalse = new Matcher('is false', (value) => value === false);
 
-function expect(value: any, matcher: Matcher);
-function expect(value: any, results: any[]);
-function expect(value: any, result: any);
-function expect(value: any, match: any) {
+//function expect(value: any, matcher: Matcher);
+//function expect(value: any, results: any[]);
+//function expect(value: any, result: any);
+function match(value: any, match: any) {
     if (match instanceof Matcher) {
         ok(match.match(value), match.message);
     } else if (match instanceof Array) {
@@ -58,7 +61,7 @@ function compareArrays(value: any, array: any[]): boolean {
     if (value.length !== array.length)
         return false;
 
-    for (var i = 0; i < this.length; i++) {
+    for (var i = 0; i < array.length; i++) {
         // Check if we have nested arrays
         if (value[i] instanceof Array && array[i] instanceof Array) {
             // recurse into the nested arrays
@@ -79,19 +82,19 @@ function group(name: string, func: () => void) {
 
 function expectSuccess(parser: Parser, input: any, expected: any, position?: number) {
     var result = parser.parse(input);
-    expect(result.isSuccess(), isTrue);
-    expect(result.isFailure(), isFalse);
-    expect(result.getValue(), expected);
-    expect(result.getPosition(), position || input.length);
+    match(result.isSuccess(), isTrue);
+    match(result.isFailure(), isFalse);
+    match(result.getValue(), expected);
+    match(result.getPosition(), position || input.length);
 }
 
 function expectFailure(parser: Parser, input: any, position: number = 0, message?: string) {
     var result = parser.parse(input);
-    expect(result.isFailure(), isTrue);
-    expect(result.isSuccess(), isFalse);
-    expect(result.getPosition(), position);
+    match(result.isFailure(), isTrue);
+    match(result.isSuccess(), isFalse);
+    match(result.getPosition(), position);
     if (message != null) {
-        expect(result.getMessage(), message);
+        match(result.getMessage(), message);
     }
 }
 
@@ -158,20 +161,20 @@ group('parsers', () => {
         expectFailure(parser, '');
         expectFailure(parser, 'a');
         var token = parser.parse('  123 ').getValue();
-        expect(token.length, 3);
-        expect(token.getStart(), 2);
-        expect(token.getStop(), 5);
-        expect(token.value, '123');
-        expect(token.toString(), 'Token[start: 2, stop: 5, value: 123]');
+        match(token.length, 3);
+        match(token.getStart(), 2);
+        match(token.getStop(), 5);
+        match(token.value, '123');
+        match(token.toString(), 'Token[start: 2, stop: 5, value: 123]');
     });
     test('token() line', () => {
-        var parser = any().token().star().map((list) => list.map((token) => token.line));
-        expect(parser.parse('1\r12\r\n123\n1234').getValue(),
+        var parser = some().token().star().map((list) => list.map((token) => token.line));
+        match(parser.parse('1\r12\r\n123\n1234').getValue(),
             [1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4]);
     });
     test('token() column', () => {
-        var parser = any().token().star().map((list) => list.map((token) => token.column));
-        expect(parser.parse('1\r12\r\n123\n1234').getValue(),
+        var parser = some().token().star().map((list) => list.map((token) => token.column));
+        match(parser.parse('1\r12\r\n123\n1234').getValue(),
             [1, 2, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]);
     });
     test('map()', () => {
@@ -604,7 +607,7 @@ group('characters', () => {
 });
 group('predicates', () => {
     test('any()', () => {
-        var parser = any();
+        var parser = some();
         expectSuccess(parser, 'a', 'a');
         expectSuccess(parser, 'b', 'b');
         expectFailure(parser, '', 0, 'input expected');
@@ -617,7 +620,7 @@ group('predicates', () => {
         expectFailure(parser, '');
     });
     test('string()', () => {
-        var parser = string('foo');
+        var parser = chars('foo');
         expectSuccess(parser, 'foo', 'foo');
         expectFailure(parser, '');
         expectFailure(parser, 'f');
@@ -637,21 +640,21 @@ group('predicates', () => {
 group('parsing', () => {
     test('parse()', () => {
         var parser = char('a');
-        expect(parser.parse('a').isSuccess, isTrue);
-        expect(parser.parse('b').isSuccess, isFalse);
+        match(parser.parse('a').isSuccess, isTrue);
+        match(parser.parse('b').isSuccess, isFalse);
     });
     test('accept()', () => {
         var parser = char('a');
-        expect(parser.accept('a'), isTrue);
-        expect(parser.accept('b'), isFalse);
+        match(parser.accept('a'), isTrue);
+        match(parser.accept('b'), isFalse);
     });
     test('matches()', () => {
         var parser = digit().seq(digit()).flatten();
-        expect(parser.matches('a123b45'), ['12', '23', '45']);
+        match(parser.matches('a123b45'), ['12', '23', '45']);
     });
     test('matchesSkipping()', () => {
         var parser = digit().seq(digit()).flatten();
-        expect(parser.matchesSkipping('a123b45'), ['12', '45']);
+        match(parser.matchesSkipping('a123b45'), ['12', '45']);
     });
 });
 // group('examples', () => {
@@ -910,7 +913,7 @@ group('regressions', () => {
 //        test('trim()', () => verify(digit().trim()));
 //        test('undefined()', () => verify(undefined()));
 //    });
-});
+//});
 //group('composite', () => {
 //    test('start', () => {
 //        var parser = new PluggableCompositeParser((self) {

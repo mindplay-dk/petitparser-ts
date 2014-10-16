@@ -10,7 +10,21 @@ module petitparser {
      * @abstract
      */
     export class Parser {
-    
+        
+        constructor() {
+            this._id = Parser._nextId++;
+        }
+        
+        /**
+         * Parser instance ID for internal mapping/indexing etc.
+         */
+        _id: number;
+        
+        /**
+         * Next Parser instance ID
+         */
+        static _nextId: number = 0;
+        
         /**
          * Primitive method doing the actual parsing.
          *
@@ -60,7 +74,7 @@ module petitparser {
          */
         matches(input: string): any[] {
             var list = [];
-            this.and().map((each) => list.push(each)).seq(any()).or(any()).star().parse(input);
+            this.and().map((each) => list.push(each)).seq(some()).or(some()).star().parse(input);
             return list;
         }
     
@@ -73,7 +87,7 @@ module petitparser {
          */
         matchesSkipping(input: string): any[] {
             var list = [];
-            this.map((each) => list.push(each)).or(any()).star().parse(input);
+            this.map((each) => list.push(each)).or(some()).star().parse(input);
             return list;
         }
     
@@ -250,7 +264,7 @@ module petitparser {
          * The parser fails for inputs like [:'a':] or [:'Z':], but succeeds for
          * input like [:'1':], [:'_':] or [:'$':].
          */
-        neg(message?: string): Parser { return this.not(message).seq(any()).pick(1) }
+        neg(message?: string): Parser { return this.not(message).seq(some()).pick(1) }
     
         /**
          * Returns a parser that discards the result of the receiver, and returns
@@ -304,7 +318,7 @@ module petitparser {
          * as [:letter():], but it can be replaced with another parser using
          * [SetableParser.set].
          */
-        setable(): _SetableParser { return new _SetableParser(this) }
+        setable(): SetableParser { return new SetableParser(this) }
     
         /**
          * Returns a parser that evaluates [function] as action handler on success
@@ -466,7 +480,6 @@ module petitparser {
             // no children, nothing to do
         }
     
-        toString(): string { return this['constructor'].name; }
-    
+        toString(): string { return (<any> this).constructor.name; }
     }
 }

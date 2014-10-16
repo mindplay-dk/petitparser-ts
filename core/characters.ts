@@ -21,7 +21,7 @@ module petitparser {
         parseOn(context: Context): Result {
             var buffer = context.getBuffer();
             var position = context.getPosition();
-            if (position < buffer.length && this._matcher.match(buffer[position])) {
+            if (position < buffer.length && this._matcher.match(buffer.charCodeAt(position))) {
                 return context.success(buffer[position], position + 1);
             }
             return context.failure(this._message);
@@ -177,10 +177,10 @@ module petitparser {
     /** Returns a parser that accepts the given character class pattern. */
     export function pattern(element: string, message?: string): Parser {
         if (_pattern === null) {
-            var single = any().map((each) =>
+            var single = some().map((each) =>
                 new _SingleCharMatcher(_toCharCode(each))
             );
-            var multiple = any().seq(char('-')).seq(any()).map((each) =>
+            var multiple = some().seq(char('-')).seq(some()).map((each) =>
                 new _RangeCharMatcher(_toCharCode(each[0]), _toCharCode(each[2]))
             );
             var positive = multiple.or(single).plus().map((each) =>

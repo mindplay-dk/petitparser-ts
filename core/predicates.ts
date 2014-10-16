@@ -8,7 +8,7 @@ module petitparser {
      * For example, [:any():] succeeds and consumes any given letter. It only
      * fails for an empty input.
      */
-    export function any(message = 'input expected'): Parser {
+    export function some(message = 'input expected'): Parser {
         return new _AnyParser(message);
     }
     
@@ -63,12 +63,12 @@ module petitparser {
      * For example, [:string('foo'):] succeeds and consumes the input string
      * [:'foo':]. Fails for any other input.
      */
-    export function string(element: string, message?: string): Parser {
+    export function chars(element: string, message?: string): Parser {
         return predicate(element.length,
             (each: string) => element === each,
             message || element + ' expected');
     }
-    
+
     /**
      * Returns a parser that accepts the string [element] ignoring the case.
      *
